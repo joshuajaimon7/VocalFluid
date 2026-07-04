@@ -71,7 +71,7 @@ The only network traffic is to `localhost` (Ollama). Audio is processed in memor
 
 - **macOS 14 (Sonoma) or later** on **Apple Silicon** (M-series)
 - **Xcode 15+** command-line tools (`swift`)
-- **[Ollama](https://ollama.com)** installed and running (for the AI cleanup layer — dictation still works without it)
+- **[Ollama](https://ollama.com)** installed (for the AI cleanup layer — dictation still works without it). You don't need to start it manually: FlowLocal launches it on startup and shuts it down on quit, so Ollama only runs while the app is open. If you already have your own Ollama server running, FlowLocal uses it and leaves it alone.
 
 ## Setup
 
@@ -167,6 +167,7 @@ swift build                                  # debug build
 | --- | --- |
 | `Transcriber` | WhisperKit streaming STT — ~1×/sec partials + a final pass; silence/hallucination filtering |
 | `Cleaner` | Ollama cleanup with intensity levels, health checks, and an answer-vs-cleanup guard |
+| `OllamaManager` | Starts the Ollama server on launch, stops it on quit (only if FlowLocal started it) |
 | `TranscriptProcessor` | Voice commands, vocabulary rules, per-app formatting |
 | `TextInserter` | Accessibility insertion + clipboard-paste fallback (clipboard preserved) |
 | `HotkeyManager` | CGEvent tap — Right ⌥ push-to-talk, ⌃⌥D toggle |
