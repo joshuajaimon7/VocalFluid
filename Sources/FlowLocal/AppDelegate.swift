@@ -7,6 +7,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let transcriber = Transcriber()
     private let inserter = TextInserter()
     private let cleaner = Cleaner()
+    private let ollama = OllamaManager()
     private let hud = TranscriptHUD()
     private let settingsWindow = SettingsWindowController()
     private let onboarding = OnboardingWindowController()
@@ -41,6 +42,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationWillTerminate(_ notification: Notification) {
         hotkeys.stop()
+        ollama.shutdownIfStarted()
     }
 
     // MARK: - Startup / model lifecycle
@@ -57,6 +59,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             }
             // Non-fatal: dictation works without cleanup (raw transcript is inserted).
             if AppSettings.shared.cleanupIntensity != .none {
+                // Start Ollama automatically if it isn't already running.
+                await ollama.ensureRunning(endpoint: AppSettings.shared.ollamaEndpoint)
                 do {
                     try await cleaner.healthCheck()
                     flog("[FlowLocal] Ollama reachable, model '\(AppSettings.shared.ollamaModel)' available.")
