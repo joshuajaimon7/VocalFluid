@@ -7,16 +7,16 @@ Hold a key, speak naturally, and beautifully formatted, cleaned-up text appears 
 
 A fast, completely on-device alternative to Wispr Flow. Zero cloud, zero accounts, zero subscriptions, zero data leaving your Mac.
 
-[![Platform](https://img.shields.io/badge/platform-macOS%2014%2B-black?logo=apple)](https://github.com/joshuajaimon7/FlowLocal/releases)
-[![Apple Silicon](https://img.shields.io/badge/Apple%20Silicon-M1%20%2F%20M2%20%2F%20M3%20%2F%20M4-black?logo=apple)](https://github.com/joshuajaimon7/FlowLocal/releases)
+[![Platform](https://img.shields.io/badge/platform-macOS%2014%2B-black?logo=apple)](https://github.com/joshuajaimon7/VocalFluid/releases)
+[![Apple Silicon](https://img.shields.io/badge/Apple%20Silicon-M1%20%2F%20M2%20%2F%20M3%20%2F%20M4-black?logo=apple)](https://github.com/joshuajaimon7/VocalFluid/releases)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
-[![Download DMG](https://img.shields.io/badge/Download-VocalFluid.dmg-success?logo=apple&style=for-the-badge)](https://github.com/joshuajaimon7/FlowLocal/releases/latest/download/VocalFluid.dmg)
+[![Download DMG](https://img.shields.io/badge/Download-VocalFluid.dmg-success?logo=apple&style=for-the-badge)](https://github.com/joshuajaimon7/VocalFluid/releases/latest/download/VocalFluid.dmg)
 
 </div>
 
 ---
 
-### [⬇️ Download Latest VocalFluid.dmg (Free)](https://github.com/joshuajaimon7/FlowLocal/releases/latest/download/VocalFluid.dmg)
+### [⬇️ Download Latest VocalFluid.dmg (Free)](https://github.com/joshuajaimon7/VocalFluid/releases/latest/download/VocalFluid.dmg)
 
 ---
 
@@ -86,15 +86,15 @@ English, Spanish, French, German, Italian, Portuguese, Hindi, Japanese, Chinese,
 ## Installation
 
 ### Option 1: Standalone DMG (Recommended)
-1. Download **[VocalFluid.dmg](https://github.com/joshuajaimon7/FlowLocal/releases/latest/download/VocalFluid.dmg)**.
+1. Download **[VocalFluid.dmg](https://github.com/joshuajaimon7/VocalFluid/releases/latest/download/VocalFluid.dmg)**.
 2. Open the disk image and drag **VocalFluid** into your **Applications** folder.
 3. Launch VocalFluid. The built-in **3-Step Setup Wizard** will guide you through permissions and model configuration.
 
 ### Option 2: Build From Source
 ```bash
 # Clone the repository
-git clone https://github.com/joshuajaimon7/FlowLocal.git
-cd FlowLocal
+git clone https://github.com/joshuajaimon7/VocalFluid.git
+cd VocalFluid
 
 # Build the release app bundle
 ./scripts/make_app.sh
