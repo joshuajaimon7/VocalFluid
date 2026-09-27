@@ -1,5 +1,5 @@
 #!/bin/bash
-# Builds FlowLocal.app from the SPM release build.
+# Builds VocalFluid.app from the SPM release build.
 #
 # Usage:
 #   ./scripts/make_app.sh                    # ad-hoc signed (local use)
@@ -11,12 +11,15 @@ cd "$(dirname "$0")/.."
 echo "==> Building (release)…"
 swift build -c release
 
-APP="build/FlowLocal.app"
+APP="build/VocalFluid.app"
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 
-cp .build/release/FlowLocal "$APP/Contents/MacOS/FlowLocal"
+cp .build/release/VocalFluid "$APP/Contents/MacOS/VocalFluid"
 cp Resources/Info.plist "$APP/Contents/Info.plist"
+if [ -f Resources/AppIcon.icns ]; then
+  cp Resources/AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"
+fi
 
 # Hardened runtime + entitlements (audio input).
 # Prefer a real signing identity: ad-hoc signatures change on every rebuild,
@@ -28,7 +31,8 @@ if [ -z "${IDENTITY:-}" ]; then
 fi
 echo "==> Signing with identity: $IDENTITY"
 codesign --force --options runtime \
-  --entitlements Resources/FlowLocal.entitlements \
+  --entitlements Resources/VocalFluid.entitlements \
+  -r="designated => identifier \"com.vocalfluid.desktop\"" \
   --sign "$IDENTITY" "$APP"
 
 echo "==> Done: $APP"

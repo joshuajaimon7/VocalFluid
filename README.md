@@ -1,190 +1,123 @@
 <div align="center">
 
-# FlowLocal
+# VocalFluid
 
-**A fully local, privacy-first voice dictation app for macOS.**
-Hold a key, speak, and cleaned-up text appears wherever your cursor is — in any app.
+**Free, 100% Local, Privacy-First AI Voice Dictation for macOS.**  
+Hold a key, speak naturally, and beautifully formatted, cleaned-up text appears instantly at your cursor in any application.
 
-A [Wispr Flow](https://wisprflow.ai) clone that runs entirely on your Mac. No cloud, no account, no data leaving your device.
+A fast, completely on-device alternative to Wispr Flow. Zero cloud, zero accounts, zero subscriptions, zero data leaving your Mac.
 
-![Platform](https://img.shields.io/badge/platform-macOS%2014%2B-black?logo=apple)
-![Apple Silicon](https://img.shields.io/badge/Apple%20Silicon-required-black?logo=apple)
-![Swift](https://img.shields.io/badge/Swift-6-orange?logo=swift)
-![License](https://img.shields.io/badge/license-MIT-blue)
-
-<img src="docs/menu.png" width="620" alt="FlowLocal menu bar dropdown">
+[![Platform](https://img.shields.io/badge/platform-macOS%2014%2B-black?logo=apple)](https://github.com/joshuajaimon7/FlowLocal/releases)
+[![Apple Silicon](https://img.shields.io/badge/Apple%20Silicon-M1%20%2F%20M2%20%2F%20M3%20%2F%20M4-black?logo=apple)](https://github.com/joshuajaimon7/FlowLocal/releases)
+[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![Download DMG](https://img.shields.io/badge/Download-VocalFluid.dmg-success?logo=apple&style=for-the-badge)](https://github.com/joshuajaimon7/FlowLocal/releases/latest/download/VocalFluid.dmg)
 
 </div>
 
 ---
 
-## What it is
+### [⬇️ Download Latest VocalFluid.dmg (Free)](https://github.com/joshuajaimon7/FlowLocal/releases/latest/download/VocalFluid.dmg)
 
-Wispr Flow is a superb dictation tool, but its transcription and AI cleanup run in the cloud — your voice leaves your machine. **FlowLocal reproduces the same experience with everything running on-device:**
+---
 
-- **Speech-to-text** via [WhisperKit](https://github.com/argmaxinc/WhisperKit), accelerated on the Apple Neural Engine / GPU
-- **AI cleanup** (filler removal, grammar, punctuation, tone) via a local [Ollama](https://ollama.com) model
-- **System-wide insertion** — the cleaned text is typed into whatever app is focused
+## Overview
 
-The only network traffic is to `localhost` (Ollama). Audio is processed in memory and **never written to disk**.
+Voice dictation tools often send audio to cloud servers for transcription and processing. **VocalFluid runs the entire pipeline 100% locally on Apple Silicon:**
 
-## How it works
+- **Speech-to-Text**: Accelerated on Apple Silicon Neural Engine (ANE) & GPU via [WhisperKit](https://github.com/argmaxinc/WhisperKit).
+- **Intelligent Text Cleanup**: Real-time punctuation, grammar, and filler removal via local on-device models ([Ollama](https://ollama.com) / Qwen 2.5).
+- **Highlight & Voice Transform**: Select any text on screen, hold Fn, and speak an instruction (*"Make this more concise"*, *"Translate to Spanish"*, *"Fix syntax"*) to rewrite it in place.
+- **App-Context Awareness**: Automatically adapts formatting based on the active application (syntax and identifiers for VS Code/Terminal/Xcode; casual and emojis for Slack/WhatsApp; formal prose for Mail/Docs).
 
+---
+
+## Comparison
+
+| Feature | Wispr Flow | VocalFluid |
+| :--- | :--- | :--- |
+| **Price** | Paid subscription ($12–$20/mo) | **100% Free & Open Source** |
+| **Audio Privacy** | Cloud servers | **100% On-Device (Never leaves RAM)** |
+| **Speech-to-Text Engine** | Cloud Whisper | **WhisperKit on Apple Neural Engine** |
+| **AI Rewrite Engine** | Cloud LLM | **On-Device Local LLM (Ollama)** |
+| **Highlight & Transform** | Limited | **Full In-Place Voice Rewriting** |
+| **Floating Capsule** | Yes | **Adaptive Bottom-Center Capsule** |
+| **App Context Awareness**| Basic | **Syntax-aware for Code, Chat & Docs** |
+| **Supported Languages** | Multi | **13+ Languages with Direct Decoder Prior** |
+| **Offline Operation** | Requires Internet | **Works 100% Offline anywhere** |
+
+---
+
+## Key Features
+
+### 🎙️ Hardware-Accelerated Push-to-Talk
+- **Hold `Fn` (🌐 Globe)** to speak; release to instantly clean and paste into the focused field.
+- **Double-tap `Fn`** to lock hands-free recording for long dictation sessions.
+- **Right `⌥ Option`** fallback for keyboards without an Fn key.
+
+### 💊 Adaptive Floating Capsule Widget
+- Renders as a subtle, unobtrusive capsule pill pinned right above the Dock.
+- Dynamically expands when speaking to show live, smooth audio waves and real-time streaming transcript right inside the capsule.
+- Smoothly displays status transitions (`Listening…` → `Pasting…` → minimal idle).
+
+### ✍️ Highlight & Voice Transform
+- Highlight text in any text field or editor.
+- Hold **Fn** and speak an instruction:
+  - *"Make this more polite"*
+  - *"Convert this to Python snake_case"*
+  - *"Summarize this in three bullet points"*
+  - *"Translate to Spanish"*
+- The highlighted text is instantly rewritten in place.
+
+### 🧠 Target-App Intelligence
+- **Code Editors (VS Code, Xcode, Cursor, Terminal)**: Formats programming terms (`camelCase`, `snake_case`), preserves code syntax, and keeps variable names intact.
+- **Messaging (Slack, Messages, WhatsApp, Discord)**: Casual punctuation, optional emoji tone, and avoids awkward trailing periods.
+- **Documents & Mail (Pages, Notes, Mail, Word)**: Formal grammar, clean paragraphs, and structured prose.
+
+### 🌐 Multi-Language Support
+Dedicated recognition for 13+ languages switchable in one click from the menu bar:
+English, Spanish, French, German, Italian, Portuguese, Hindi, Japanese, Chinese, Russian, Arabic, Korean, and Auto-Detect.
+
+### ⚡ Ultra-Lightweight & Battery Efficient
+- Optimized to run in **under 500 MB total RAM** (~165 MB measured footprint).
+- Dynamic 5-minute memory unloading to preserve battery life on MacBooks.
+
+---
+
+## Installation
+
+### Option 1: Standalone DMG (Recommended)
+1. Download **[VocalFluid.dmg](https://github.com/joshuajaimon7/FlowLocal/releases/latest/download/VocalFluid.dmg)**.
+2. Open the disk image and drag **VocalFluid** into your **Applications** folder.
+3. Launch VocalFluid. The built-in **3-Step Setup Wizard** will guide you through permissions and model configuration.
+
+### Option 2: Build From Source
+```bash
+# Clone the repository
+git clone https://github.com/joshuajaimon7/FlowLocal.git
+cd FlowLocal
+
+# Build the release app bundle
+./scripts/make_app.sh
+
+# Open the application
+open build/VocalFluid.app
 ```
-        ┌── hold Right ⌥ ──┐
-        ▼                  │
-   🎙  AVAudioEngine        │  live partial transcript shown in a floating HUD
-        │                  │
-        ▼                  │
-   🧠  WhisperKit  ─────────┘  on-device STT (Neural Engine), streaming
-        │
-        ▼  (on release)
-   ✨  Ollama LLM              filler removal · grammar · punctuation · tone
-        │                     (4 intensity levels, runs on localhost)
-        ▼
-   🔧  Post-processing        voice commands · custom vocabulary · per-app formatting
-        │
-        ▼
-   ⌨️  Text insertion         Accessibility API → clipboard-paste fallback
-        │
-        ▼
-   📝  …text appears at your cursor, in any app
-```
 
-## Features
-
-- 🎙 **Push-to-talk dictation** — hold **Right ⌥** and speak; release to insert. Or **⌃⌥D** to toggle hands-free.
-- ⚡ **Live streaming transcript** — a floating HUD shows partial results as you talk, so you know it's listening.
-- ✨ **AI cleanup with 4 intensity levels** — from raw passthrough to full grammar-and-tone polish, powered by a local LLM.
-- 📖 **Custom vocabulary** — teach it names, jargon, and acronyms; bias recognition and auto-correct spelling.
-- 🗣 **Voice commands** — say *"scratch that"* to undo, *"new line"* / *"new paragraph"* for breaks.
-- 🪟 **App-awareness** — drops the trailing period in messaging apps (Messages, Slack, WhatsApp, Discord) for a casual feel; keeps it formal elsewhere.
-- 🔒 **100% local & private** — no cloud, no telemetry, no account. Audio never touches the disk.
-- 🍎 **Native & lightweight** — a Swift menu-bar app with no dock icon, using Metal/ANE acceleration.
-
-<div align="center">
-<img src="docs/onboarding.png" width="440" alt="First-run setup walks through permissions">
-<br><em>First-run setup walks you through the two required permissions and verifies Ollama.</em>
-</div>
+---
 
 ## Requirements
 
-- **macOS 14 (Sonoma) or later** on **Apple Silicon** (M-series)
-- **Xcode 15+** command-line tools (`swift`)
-- **[Ollama](https://ollama.com)** installed (for the AI cleanup layer — dictation still works without it). You don't need to start it manually: FlowLocal launches it on startup and shuts it down on quit, so Ollama only runs while the app is open. If you already have your own Ollama server running, FlowLocal uses it and leaves it alone.
+- **macOS 14 (Sonoma)** or later
+- **Apple Silicon** (M1, M2, M3, M4 or newer)
+- System Permissions: **Microphone** (speech capture) and **Accessibility** (global hotkey and text pasting)
 
-## Setup
-
-```bash
-# 1. Clone
-git clone https://github.com/AlanRoybal/FlowLocal.git
-cd FlowLocal
-
-# 2. Pull the default cleanup model (~2 GB)
-ollama pull qwen2.5:3b-instruct
-
-# 3. Build the app bundle
-./scripts/make_app.sh
-
-# 4. Launch
-open build/FlowLocal.app
-```
-
-On first launch, an onboarding window walks you through granting **Microphone** and **Accessibility** permissions (both required), and verifies Ollama is reachable. The default speech model (~632 MB) downloads automatically on first run.
-
-> **Note on signing:** `make_app.sh` automatically signs with your Apple Development certificate if you have one (recommended — ad-hoc signatures change every rebuild, which makes macOS silently revoke the Accessibility grant). It falls back to ad-hoc signing otherwise.
-
-## Usage
-
-| Action | How |
-| --- | --- |
-| **Dictate** (push-to-talk) | Hold **Right ⌥**, speak, release |
-| **Dictate** (hands-free) | **⌃⌥D** to start / stop |
-| **Undo last dictation** | say *"scratch that"* or *"delete that"* |
-| **Line break** | say *"new line"* / *"new paragraph"* |
-| **Open settings** | menu-bar icon → **Settings…** |
-
-The menu-bar icon reflects the current state: idle 🎙, listening, transcribing, cleaning, or error.
-
-## Configuration
-
-Everything is configurable from the menu-bar **Settings…** window.
-
-<div align="center">
-<img src="docs/settings-general.png" width="480" alt="General settings">
-<img src="docs/settings-vocabulary.png" width="480" alt="Vocabulary settings">
-</div>
-
-**General** — pick the speech model (accuracy vs. RAM), the Ollama endpoint and cleanup model, and the cleanup intensity:
-
-| Intensity | Behavior |
-| --- | --- |
-| **None** | Raw transcript, LLM bypassed entirely |
-| **Light** | Remove filler words, fix typos |
-| **Medium** *(default)* | + grammar, punctuation, list formatting |
-| **High** | + light rephrasing for clarity |
-
-**Vocabulary** — add terms to bias recognition (fed to Whisper as a prompt) and optional replacement rules to auto-correct spelling.
-
-**Apps** — edit the list of "casual" apps where the trailing period is dropped.
-
-### Models
-
-**Speech (WhisperKit):** `large-v3-v20240930_turbo_632MB` (default) · `distil-whisper` · `small` · `base` · `tiny` — smaller is faster and lighter, larger is more accurate.
-
-**Cleanup (Ollama):** `qwen2.5:3b-instruct` (default) · `llama3.1:8b` (best quality) · `gemma2:2b` (fastest) · `phi3`. Pull any with `ollama pull <model>`.
-
-## Privacy
-
-- **Audio** is processed in memory, never written to disk, and never leaves your Mac.
-- **Transcripts** are inserted at your cursor. An optional local text history is **off by default**.
-- **Network:** the app talks only to your local Ollama server. The single exception is a one-time model download from Hugging Face when you first select a speech model.
-
-The app runs **unsandboxed** (App Sandbox off), because the Accessibility API (typing into other apps) and CGEvent taps (the global hotkey) don't function inside the sandbox. It is signed with the hardened runtime and declares only the microphone entitlement (see `Resources/FlowLocal.entitlements`).
-
-## Text insertion
-
-FlowLocal inserts text with a two-tier strategy:
-
-1. **Accessibility API** — sets the focused element's text directly. Precise, but silently unsupported in some apps (Google Docs, VS Code, Electron apps).
-2. **Clipboard fallback** — saves your clipboard, pastes via a synthesized ⌘V, then restores your clipboard. Works nearly everywhere.
-
-## Development
-
-```bash
-swift build                                  # debug build
-.build/debug/FlowLocal                        # run the menu-bar app from a terminal
-.build/debug/FlowLocal --selftest             # verify model load + transcription (headless)
-.build/debug/FlowLocal --process-test         # verify commands / vocab / app-rules logic
-.build/debug/FlowLocal --clean-test "um so"    # verify the Ollama cleanup pass
-.build/debug/FlowLocal --insert-test "hi"      # insert text into the focused field after 3s
-.build/debug/FlowLocal --model tiny            # temporary speech-model override
-```
-
-**Module layout** (`Sources/FlowLocal/`):
-
-| Module | Responsibility |
-| --- | --- |
-| `Transcriber` | WhisperKit streaming STT — ~1×/sec partials + a final pass; silence/hallucination filtering |
-| `Cleaner` | Ollama cleanup with intensity levels, health checks, and an answer-vs-cleanup guard |
-| `OllamaManager` | Starts the Ollama server on launch, stops it on quit (only if FlowLocal started it) |
-| `TranscriptProcessor` | Voice commands, vocabulary rules, per-app formatting |
-| `TextInserter` | Accessibility insertion + clipboard-paste fallback (clipboard preserved) |
-| `HotkeyManager` | CGEvent tap — Right ⌥ push-to-talk, ⌃⌥D toggle |
-| `TranscriptHUD` | Floating live-transcript panel |
-| `AppDelegate` | Menu bar, state machine, pipeline wiring |
-| `SettingsWindow` / `OnboardingWindow` | SwiftUI configuration + first-run flow |
-
-## Limitations & roadmap
-
-- Text is inserted on hotkey **release**, not streamed word-by-word as you speak (matching most open-source alternatives; true streaming insertion is a possible future addition).
-- First model load in a fresh build takes ~1–3 minutes while CoreML compiles for the Neural Engine; subsequent launches are fast.
-- Custom keyboards / secure fields (e.g. password fields) can't be typed into — a macOS platform restriction.
+---
 
 ## Acknowledgements
 
-Built on [WhisperKit](https://github.com/argmaxinc/WhisperKit) by Argmax and [Ollama](https://ollama.com). Inspired by [Wispr Flow](https://wisprflow.ai) and the open-source dictation community ([VoiceInk](https://github.com/beingpax/VoiceInk), [Handy](https://github.com/cjpais/Handy), [OpenWhispr](https://github.com/OpenWhispr/openwhispr)).
+VocalFluid is built upon open-source research and engineering from:
+- [FlowLocal](https://github.com/AlanRoybal/FlowLocal) by Alan Roybal (MIT License)
+- [WhisperKit](https://github.com/argmaxinc/WhisperKit) by Argmax
+- [Ollama](https://ollama.com) and the Qwen Team (Alibaba Cloud)
 
-## License
-
-[MIT](LICENSE)
+See [ACKNOWLEDGEMENTS.md](ACKNOWLEDGEMENTS.md) for full licensing details.

@@ -2,7 +2,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "FlowLocal",
+    name: "VocalFluid",
     platforms: [
         .macOS(.v14)
     ],
@@ -11,11 +11,11 @@ let package = Package(
     ],
     targets: [
         .executableTarget(
-            name: "FlowLocal",
+            name: "VocalFluid",
             dependencies: [
                 .product(name: "WhisperKit", package: "WhisperKit")
             ],
-            path: "Sources/FlowLocal",
+            path: "Sources/VocalFluid",
             swiftSettings: [
                 .swiftLanguageMode(.v5)
             ]

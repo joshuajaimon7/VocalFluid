@@ -1,8 +1,18 @@
 import Foundation
 
+public struct LanguageOption: Identifiable, Hashable {
+    public let id: String
+    public let name: String
+    public let flag: String
+
+    public init(id: String, name: String, flag: String) {
+        self.id = id
+        self.name = name
+        self.flag = flag
+    }
+}
+
 /// User-configurable settings, persisted in UserDefaults.
-/// (A SwiftUI Settings window arrives in milestone 4; for now these are
-/// readable/writable via `defaults write com.flowlocal.app <key>`.)
 final class AppSettings {
     static let shared = AppSettings()
 
@@ -13,31 +23,55 @@ final class AppSettings {
         static let ollamaEndpoint = "ollamaEndpoint"
         static let ollamaModel = "ollamaModel"
         static let cleanupIntensity = "cleanupIntensity"
+        static let language = "language"
         static let vocabulary = "vocabulary"
         static let casualApps = "casualApps"
         static let keepHistory = "keepHistory"
         static let onboarded = "onboarded"
+        static let highlightTransform = "highlightTransform"
     }
 
-    /// In-memory override from the --model CLI flag; not persisted.
+    /// Supported dictation languages
+    static let supportedLanguages: [LanguageOption] = [
+        LanguageOption(id: "en", name: "English", flag: "🇺🇸"),
+        LanguageOption(id: "auto", name: "Auto-Detect", flag: "🌐"),
+        LanguageOption(id: "es", name: "Spanish", flag: "🇪🇸"),
+        LanguageOption(id: "fr", name: "French", flag: "🇫🇷"),
+        LanguageOption(id: "de", name: "German", flag: "🇩🇪"),
+        LanguageOption(id: "it", name: "Italian", flag: "🇮🇹"),
+        LanguageOption(id: "pt", name: "Portuguese", flag: "🇵🇹"),
+        LanguageOption(id: "hi", name: "Hindi", flag: "🇮🇳"),
+        LanguageOption(id: "ja", name: "Japanese", flag: "🇯🇵"),
+        LanguageOption(id: "zh", name: "Chinese", flag: "🇨🇳"),
+        LanguageOption(id: "ru", name: "Russian", flag: "🇷🇺"),
+        LanguageOption(id: "ar", name: "Arabic", flag: "🇸🇦"),
+        LanguageOption(id: "ko", name: "Korean", flag: "🇰🇷"),
+    ]
+
+    /// Target language for transcription (e.g. "en", "auto", "es"). Default: "en" for maximum accuracy.
+    var language: String {
+        get { defaults.string(forKey: Key.language) ?? "en" }
+        set { defaults.set(newValue, forKey: Key.language) }
+    }
+
+    /// In-memory override from CLI flag; not persisted.
     var modelNameOverride: String?
 
-    /// WhisperKit model variant. Default: quantized large-v3 turbo (632MB),
-    /// the best latency/accuracy tradeoff on Apple Silicon (runs on ANE/GPU).
+    /// WhisperKit model variant. Default: large-v3 turbo (632MB), fast & accurate on Neural Engine.
     var modelName: String {
         get { modelNameOverride ?? defaults.string(forKey: Key.modelName) ?? "large-v3-v20240930_turbo_632MB" }
         set { defaults.set(newValue, forKey: Key.modelName) }
     }
 
-    /// Local Ollama server. localhost only — the app makes no other network calls.
+    /// Local Ollama server.
     var ollamaEndpoint: String {
         get { defaults.string(forKey: Key.ollamaEndpoint) ?? "http://localhost:11434" }
         set { defaults.set(newValue, forKey: Key.ollamaEndpoint) }
     }
 
-    /// Ollama model for the cleanup pass (also good: llama3.1:8b, gemma2:2b, phi3).
+    /// Ollama model for the cleanup pass. Default is lightweight qwen2.5:0.5b (under 400MB RAM).
     var ollamaModel: String {
-        get { defaults.string(forKey: Key.ollamaModel) ?? "qwen2.5:3b-instruct" }
+        get { defaults.string(forKey: Key.ollamaModel) ?? "qwen2.5:0.5b" }
         set { defaults.set(newValue, forKey: Key.ollamaModel) }
     }
 
@@ -50,8 +84,13 @@ final class AppSettings {
         set { defaults.set(newValue.rawValue, forKey: Key.cleanupIntensity) }
     }
 
-    /// Custom vocabulary: terms bias WhisperKit recognition; entries with a
-    /// replacement are also applied as find-replace after the LLM pass.
+    /// Enable Highlight & Voice Transform (rewriting selected text)
+    var highlightTransform: Bool {
+        get { defaults.object(forKey: Key.highlightTransform) as? Bool ?? true }
+        set { defaults.set(newValue, forKey: Key.highlightTransform) }
+    }
+
+    /// Custom vocabulary: terms bias WhisperKit recognition.
     var vocabulary: [VocabularyEntry] {
         get {
             guard let data = defaults.data(forKey: Key.vocabulary),
@@ -73,7 +112,7 @@ final class AppSettings {
         set { defaults.set(newValue, forKey: Key.casualApps) }
     }
 
-    /// Keep a local transcript history (never audio). Off by default.
+    /// Keep a local transcript history.
     var keepHistory: Bool {
         get { defaults.bool(forKey: Key.keepHistory) }
         set { defaults.set(newValue, forKey: Key.keepHistory) }

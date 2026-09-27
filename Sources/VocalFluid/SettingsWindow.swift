@@ -5,6 +5,8 @@ import SwiftUI
 @MainActor
 final class SettingsModel: ObservableObject {
     @Published var modelName: String { didSet { AppSettings.shared.modelName = modelName } }
+    @Published var language: String { didSet { AppSettings.shared.language = language } }
+    @Published var highlightTransform: Bool { didSet { AppSettings.shared.highlightTransform = highlightTransform } }
     @Published var ollamaEndpoint: String { didSet { AppSettings.shared.ollamaEndpoint = ollamaEndpoint } }
     @Published var ollamaModel: String { didSet { AppSettings.shared.ollamaModel = ollamaModel } }
     @Published var intensity: CleanupIntensity { didSet { AppSettings.shared.cleanupIntensity = intensity } }
@@ -19,12 +21,13 @@ final class SettingsModel: ObservableObject {
     }
     @Published var keepHistory: Bool { didSet { AppSettings.shared.keepHistory = keepHistory } }
 
-    /// Restart-required marker: STT model changes need a model reload.
     @Published var modelChangePending = false
 
     init() {
         let settings = AppSettings.shared
         modelName = settings.modelName
+        language = settings.language
+        highlightTransform = settings.highlightTransform
         ollamaEndpoint = settings.ollamaEndpoint
         ollamaModel = settings.ollamaModel
         intensity = settings.cleanupIntensity
@@ -46,6 +49,8 @@ final class SettingsModel: ObservableObject {
     ]
 
     static let ollamaModels = [
+        "qwen2.5:0.5b",
+        "qwen2.5:1.5b",
         "qwen2.5:3b-instruct",
         "llama3.1:8b",
         "gemma2:2b",
@@ -63,33 +68,46 @@ struct SettingsView: View {
             vocabularyTab.tabItem { Label("Vocabulary", systemImage: "character.book.closed") }
             appsTab.tabItem { Label("Apps", systemImage: "macwindow") }
         }
-        .frame(width: 480, height: 360)
+        .frame(width: 500, height: 400)
         .padding()
     }
 
     private var generalTab: some View {
         Form {
-            Picker("Speech model", selection: $model.modelName) {
+            Picker("Spoken Language", selection: $model.language) {
+                ForEach(AppSettings.supportedLanguages) { lang in
+                    Text("\(lang.flag) \(lang.name)").tag(lang.id)
+                }
+            }
+
+            Picker("Speech Model", selection: $model.modelName) {
                 ForEach(SettingsModel.sttModels, id: \.self) { Text($0) }
             }
             .onChange(of: model.modelName) { onModelChanged() }
 
             Divider()
 
-            TextField("Ollama endpoint", text: $model.ollamaEndpoint)
-            Picker("Cleanup model", selection: $model.ollamaModel) {
+            Toggle("Highlight & Voice Transform (Rewrite in-place)", isOn: $model.highlightTransform)
+                .help("Select text anywhere on screen, hold Fn, and speak instructions to rewrite it.")
+
+            Divider()
+
+            Picker("AI Cleanup Model", selection: $model.ollamaModel) {
                 ForEach(SettingsModel.ollamaModels, id: \.self) { Text($0) }
             }
-            Picker("Cleanup intensity", selection: $model.intensity) {
+
+            Picker("Cleanup Intensity", selection: $model.intensity) {
                 ForEach(CleanupIntensity.allCases, id: \.self) { Text($0.rawValue) }
             }
             .pickerStyle(.segmented)
 
+            TextField("Ollama Endpoint", text: $model.ollamaEndpoint)
+
             Divider()
 
-            Toggle("Keep local transcript history (text only, never audio)", isOn: $model.keepHistory)
+            Toggle("Keep local transcript history (never audio)", isOn: $model.keepHistory)
 
-            Text("Hotkeys: hold Right ⌥ to dictate (push-to-talk) · ⌃⌥D toggles")
+            Text("Hold Fn (🌐) or Right ⌥ to speak · Double-tap Fn to toggle hands-free · Hold Shift on release for raw text")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
         }
@@ -118,30 +136,31 @@ struct SettingsView: View {
                 }
             }
 
-            Button {
-                model.vocabulary.append(VocabularyEntry(term: ""))
-            } label: {
-                Label("Add term", systemImage: "plus")
+            HStack {
+                Button("+ Add Term") {
+                    model.vocabulary.append(VocabularyEntry(term: "", replacement: ""))
+                }
+                Spacer()
             }
         }
         .padding()
     }
 
     private var appsTab: some View {
-        Form {
-            Text("Casual apps — the trailing period is dropped when dictating into these:")
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Casual Apps")
+                .font(.headline)
+            Text("Dictation into these apps drops the trailing period for a conversational feel:")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
-            TextField("Comma-separated app names", text: $model.casualApps)
-            Text("Match by app name as shown in the menu bar (e.g. Messages, Slack).")
-                .font(.footnote)
-                .foregroundStyle(.tertiary)
+            TextField("Messages, Slack, WhatsApp, Discord", text: $model.casualApps)
+                .textFieldStyle(.roundedBorder)
+            Spacer()
         }
         .padding()
     }
 }
 
-/// Hosts the SwiftUI settings view in a regular window.
 @MainActor
 final class SettingsWindowController {
     private var window: NSWindow?
@@ -150,13 +169,15 @@ final class SettingsWindowController {
 
     func show() {
         if window == nil {
-            let view = SettingsView(model: model) { [weak self] in self?.onModelChanged?() }
+            let view = SettingsView(model: model) { [weak self] in
+                self?.onModelChanged?()
+            }
             let hosting = NSHostingController(rootView: view)
-            let window = NSWindow(contentViewController: hosting)
-            window.title = "FlowLocal Settings"
-            window.styleMask = [.titled, .closable]
-            window.isReleasedWhenClosed = false
-            self.window = window
+            let win = NSWindow(contentViewController: hosting)
+            win.title = "VocalFluid Settings"
+            win.styleMask = [.titled, .closable]
+            win.isReleasedWhenClosed = false
+            self.window = win
         }
         window?.center()
         window?.makeKeyAndOrderFront(nil)

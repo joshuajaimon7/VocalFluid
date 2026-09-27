@@ -16,10 +16,10 @@ if let insertFlagIndex = arguments.firstIndex(of: "--insert-test"), insertFlagIn
     // Manual verification of text insertion: focus any text field within 3s,
     // and the given string is inserted at the cursor (AX first, paste fallback).
     let text = arguments[insertFlagIndex + 1]
-    print("[FlowLocal] Inserting \"\(text)\" into the focused field in 3 seconds — click into a text field now…")
+    print("[VocalFluid] Inserting \"\(text)\" into the focused field in 3 seconds — click into a text field now…")
     DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
         let method = TextInserter().insert(text)
-        print("[FlowLocal] Inserted via \(method).")
+        print("[VocalFluid] Inserted via \(method).")
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) { exit(0) }
     }
     RunLoop.main.run()
@@ -27,11 +27,11 @@ if let insertFlagIndex = arguments.firstIndex(of: "--insert-test"), insertFlagIn
     // Verify the Ollama cleanup pass: health check, then clean the given text
     // at every intensity level.
     let raw = arguments[cleanFlagIndex + 1]
-    Task {
+    Task { @MainActor in
         let cleaner = Cleaner()
         do {
             try await cleaner.healthCheck()
-            print("[FlowLocal] Ollama OK (model: \(AppSettings.shared.ollamaModel))")
+            print("[VocalFluid] Ollama OK (model: \(AppSettings.shared.ollamaModel))")
             for intensity in CleanupIntensity.allCases where intensity != .none {
                 let cleaned = try await cleaner.clean(raw, intensity: intensity, appContext: "Notes")
                 print("[\(intensity.rawValue)] \(cleaned)")

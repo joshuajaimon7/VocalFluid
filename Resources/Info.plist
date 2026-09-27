@@ -3,13 +3,15 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleIdentifier</key>
-	<string>com.flowlocal.app</string>
+	<string>com.vocalfluid.desktop</string>
 	<key>CFBundleName</key>
-	<string>FlowLocal</string>
+	<string>VocalFluid</string>
 	<key>CFBundleDisplayName</key>
-	<string>FlowLocal</string>
+	<string>VocalFluid</string>
 	<key>CFBundleExecutable</key>
-	<string>FlowLocal</string>
+	<string>VocalFluid</string>
+	<key>CFBundleIconFile</key>
+	<string>AppIcon</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -21,8 +23,8 @@
 	<key>LSUIElement</key>
 	<true/>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>FlowLocal listens while you hold the dictation hotkey. Audio is transcribed on-device and never stored or sent anywhere.</string>
+	<string>VocalFluid listens while you hold the dictation hotkey. Audio is transcribed on-device and never stored or sent anywhere.</string>
 	<key>NSHumanReadableCopyright</key>
-	<string>Local-only dictation. No cloud.</string>
+	<string>Local-only dictation powered by VocalFluid. No cloud.</string>
 </dict>
 </plist>

@@ -12,9 +12,9 @@ enum AppState: Equatable {
     var menuBarSymbol: String {
         switch self {
         case .loading:      return "hourglass"
-        case .idle:         return "mic"
-        case .listening:    return "mic.fill"
-        case .transcribing: return "waveform"
+        case .idle:         return "waveform"
+        case .listening:    return "record.circle.fill"
+        case .transcribing: return "waveform.circle.fill"
         case .cleaning:     return "wand.and.stars"
         case .error:        return "exclamationmark.triangle.fill"
         }
@@ -23,7 +23,7 @@ enum AppState: Equatable {
     var label: String {
         switch self {
         case .loading:            return "Loading model…"
-        case .idle:               return "Idle — hold Right ⌥ to dictate"
+        case .idle:               return "Idle — hold Fn (🌐) or Right ⌥ to dictate"
         case .listening:          return "Listening…"
         case .transcribing:       return "Transcribing…"
         case .cleaning:           return "Cleaning up…"
