@@ -268,6 +268,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func stopDictation(bypassCleanup: Bool = false) {
         guard dictating else { return }
         dictating = false
+        hotkeys.isHandsFree = false
         bypassCleanupNext = bypassCleanup
         state = .transcribing
         flog("[dictation] stop — transcribing (bypass=\(bypassCleanup))")

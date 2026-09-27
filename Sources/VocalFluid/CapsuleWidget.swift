@@ -8,16 +8,12 @@ public final class CapsuleViewModel: ObservableObject {
 
     @Published public var isDictating: Bool = false
     @Published public var liveTranscript: String = ""
-    @Published public var isHovered: Bool = false {
-        didSet {
-            CapsuleWidgetController.shared.reposition()
-        }
-    }
+    @Published public var isHovered: Bool = false
 }
 
 /// The floating bottom-screen capsule widget.
 /// Idle: Minimal, subtle dark-grey pill (no square artifacts, no clutter).
-/// Hover/Dictate: Expands with smooth, subtle animations.
+/// Hover/Dictate: Expands with smooth, subtle animations inside a stable transparent container.
 public struct CapsuleWidgetView: View {
     @ObservedObject var model = CapsuleViewModel.shared
 
@@ -33,6 +29,23 @@ public struct CapsuleWidgetView: View {
     }
 
     public var body: some View {
+        HStack {
+            Spacer(minLength: 0)
+
+            capsuleContent
+                .onHover { hovering in
+                    withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) {
+                        model.isHovered = hovering
+                    }
+                }
+
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    @ViewBuilder
+    private var capsuleContent: some View {
         ZStack {
             if model.isDictating {
                 // DICTATING: Sleek capsule showing live transcript right inside!
@@ -71,7 +84,7 @@ public struct CapsuleWidgetView: View {
                     .buttonStyle(.plain)
                 }
                 .padding(.horizontal, 10)
-                .frame(height: 26)
+                .frame(width: dynamicDictatingWidth, height: 26)
                 .transition(.opacity)
 
             } else if model.isHovered {
@@ -113,7 +126,7 @@ public struct CapsuleWidgetView: View {
                     .help("Open Dashboard")
                 }
                 .padding(.horizontal, 8)
-                .frame(height: 26)
+                .frame(width: 120, height: 26)
                 .transition(.opacity)
 
             } else {
@@ -128,6 +141,7 @@ public struct CapsuleWidgetView: View {
                 }
                 .buttonStyle(.plain)
                 .help("VocalFluid — Hold Fn to speak")
+                .frame(width: 40, height: 26)
                 .transition(.opacity)
             }
         }
@@ -142,10 +156,15 @@ public struct CapsuleWidgetView: View {
         )
         .clipShape(Capsule())
         .shadow(color: Color.black.opacity(0.3), radius: 6, x: 0, y: 3)
-        .onHover { hovering in
-            withAnimation(.easeInOut(duration: 0.18)) {
-                model.isHovered = hovering
-            }
+    }
+
+    private var dynamicDictatingWidth: CGFloat {
+        let textLen = model.liveTranscript.count
+        if textLen <= 10 {
+            return 210
+        } else {
+            let estimated = CGFloat(160 + min(textLen * 7, 280))
+            return min(max(estimated, 210), 450)
         }
     }
 }
@@ -175,16 +194,15 @@ public final class CapsuleWidgetController {
     }
 
     public func setDictating(_ dictating: Bool, partialText: String = "") {
-        withAnimation(.easeInOut(duration: 0.18)) {
+        withAnimation(.spring(response: 0.28, dampingFraction: 0.82)) {
             CapsuleViewModel.shared.isDictating = dictating
             CapsuleViewModel.shared.liveTranscript = partialText
         }
-        reposition()
     }
 
     private func buildPanel() {
-        let width: CGFloat = 40
-        let height: CGFloat = 22
+        let width: CGFloat = 480
+        let height: CGFloat = 38
 
         let panel = NSPanel(
             contentRect: NSRect(x: 0, y: 0, width: width, height: height),
@@ -196,9 +214,9 @@ public final class CapsuleWidgetController {
         panel.hidesOnDeactivate = false
         panel.isOpaque = false
         panel.backgroundColor = .clear
-        panel.hasShadow = false // Shadow handled inside SwiftUI with clipShape to prevent square box artifacts
+        panel.hasShadow = false
         panel.ignoresMouseEvents = false
-        panel.isMovableByWindowBackground = true
+        panel.isMovableByWindowBackground = false
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary]
 
         self.panel = panel
@@ -227,28 +245,12 @@ public final class CapsuleWidgetController {
         guard let panel, let screen = NSScreen.main else { return }
         let screenFrame = screen.visibleFrame
 
-        let isDictating = CapsuleViewModel.shared.isDictating
-        let isHovered = CapsuleViewModel.shared.isHovered
-
-        let width: CGFloat
-        let height: CGFloat = 26
-        if isDictating {
-            let textLen = CapsuleViewModel.shared.liveTranscript.count
-            if textLen <= 10 {
-                width = 210
-            } else {
-                let estimated = CGFloat(160 + min(textLen * 7, 300))
-                width = min(max(estimated, 210), min(screenFrame.width * 0.7, 460))
-            }
-        } else if isHovered {
-            width = 120
-        } else {
-            width = 40 // Minimal small grey capsule pill
-        }
+        let width: CGFloat = 480
+        let height: CGFloat = 38
 
         let x = screenFrame.midX - (width / 2.0)
-        let y = screenFrame.minY + 24
+        let y = screenFrame.minY + 20
 
-        panel.setFrame(NSRect(x: x, y: y, width: width, height: height), display: true, animate: true)
+        panel.setFrame(NSRect(x: x, y: y, width: width, height: height), display: true)
     }
 }

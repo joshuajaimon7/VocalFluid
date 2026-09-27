@@ -136,12 +136,25 @@ final class Transcriber {
             return
         }
 
-        // If background streaming already transcribed within 0.25s of key release, use it instantly!
+        // High-speed final transcript resolution: avoid re-transcribing long audio from scratch
         var text: String
         let unTranscribedSamples = samples.count - lastTranscribedSampleCount
-        if unTranscribedSamples < 4000 && !latestPartialText.isEmpty {
-            flog("[stt] instant final from streaming partial (\(unTranscribedSamples) trailing samples)")
-            text = latestPartialText
+        if !latestPartialText.isEmpty {
+            if unTranscribedSamples < 24000 {
+                flog("[stt] instant final from streaming partial (\(unTranscribedSamples) trailing samples)")
+                text = latestPartialText
+            } else {
+                // Transcribe only the trailing seconds rather than the entire 40+ second audio buffer
+                let trailingCount = min(unTranscribedSamples + 8000, 64000)
+                let trailingSamples = Array(samples.suffix(trailingCount))
+                let trailingRms = sqrt(trailingSamples.reduce(Float(0)) { $0 + $1 * $1 } / Float(trailingSamples.count))
+                if trailingRms > 0.003, let tailText = try? await transcribe(samples: trailingSamples), !tailText.isEmpty {
+                    text = "\(latestPartialText) \(tailText)"
+                    flog("[stt] fast merged tail text (\(tailText.prefix(20))…)")
+                } else {
+                    text = latestPartialText
+                }
+            }
         } else {
             text = (try? await transcribe(samples: samples)) ?? ""
         }

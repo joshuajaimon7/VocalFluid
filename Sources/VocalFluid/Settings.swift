@@ -79,7 +79,7 @@ final class AppSettings {
     var cleanupIntensity: CleanupIntensity {
         get {
             defaults.string(forKey: Key.cleanupIntensity)
-                .flatMap(CleanupIntensity.init(rawValue:)) ?? .medium
+                .flatMap(CleanupIntensity.init(rawValue:)) ?? .light
         }
         set { defaults.set(newValue.rawValue, forKey: Key.cleanupIntensity) }
     }

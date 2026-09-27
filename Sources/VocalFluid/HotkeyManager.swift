@@ -110,6 +110,8 @@ final class HotkeyManager {
         rightOptionHeld = false
     }
 
+    public var isHandsFree: Bool = false
+
     private func handle(type: CGEventType, event: CGEvent) {
         switch type {
         case .flagsChanged:
@@ -117,28 +119,31 @@ final class HotkeyManager {
             let flags = event.flags
 
             // 1. Function / Globe key detection (Wispr Flow default)
-            let isFnFlag = flags.contains(.maskSecondaryFn)
             let isFnKeycode = (keycode == Self.fnKeycode)
+            let isFnFlag = flags.contains(.maskSecondaryFn)
 
-            if isFnFlag || isFnKeycode {
-                let isNowDown = isFnFlag
+            if isFnKeycode || isFnFlag {
+                let isNowDown = isFnFlag || (isFnKeycode && !fnHeld)
                 if isNowDown != fnHeld {
                     fnHeld = isNowDown
                     if fnHeld {
-                        let now = Date()
-                        // Double-tap Fn detection within 350ms toggles continuous dictation
-                        if now.timeIntervalSince(lastFnPressTime) < 0.35 {
-                            flog("[hotkey] Double-tap Fn detected -> toggling hands-free dictation")
-                            DispatchQueue.main.async { self.onToggle?() }
-                        } else {
-                            flog("[hotkey] Fn down (push-to-talk)")
-                            DispatchQueue.main.async { self.onPushToTalkDown?() }
+                        flog("[hotkey] Fn down (push-to-talk)")
+                        DispatchQueue.main.async {
+                            if self.isHandsFree {
+                                self.isHandsFree = false
+                                self.onPushToTalkUp?(false)
+                            } else {
+                                self.onPushToTalkDown?()
+                            }
                         }
-                        lastFnPressTime = now
                     } else {
                         flog("[hotkey] Fn up (stop dictation)")
                         let bypass = flags.contains(.maskShift)
-                        DispatchQueue.main.async { self.onPushToTalkUp?(bypass) }
+                        DispatchQueue.main.async {
+                            if !self.isHandsFree {
+                                self.onPushToTalkUp?(bypass)
+                            }
+                        }
                     }
                 }
             }
@@ -150,11 +155,22 @@ final class HotkeyManager {
                     rightOptionHeld = optionDown
                     if rightOptionHeld {
                         flog("[hotkey] Right Option down (push-to-talk)")
-                        DispatchQueue.main.async { self.onPushToTalkDown?() }
+                        DispatchQueue.main.async {
+                            if self.isHandsFree {
+                                self.isHandsFree = false
+                                self.onPushToTalkUp?(false)
+                            } else {
+                                self.onPushToTalkDown?()
+                            }
+                        }
                     } else {
                         flog("[hotkey] Right Option up (stop dictation)")
                         let bypass = flags.contains(.maskShift)
-                        DispatchQueue.main.async { self.onPushToTalkUp?(bypass) }
+                        DispatchQueue.main.async {
+                            if !self.isHandsFree {
+                                self.onPushToTalkUp?(bypass)
+                            }
+                        }
                     }
                 }
             }

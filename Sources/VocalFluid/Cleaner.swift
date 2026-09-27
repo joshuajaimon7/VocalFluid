@@ -89,6 +89,39 @@ final class Cleaner {
         }
     }
 
+    // MARK: - Fast Rule-Based Speech Cleanup (0ms Latency)
+
+    static func quickClean(_ text: String) -> String {
+        var result = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !result.isEmpty else { return "" }
+
+        // Remove common speech fillers using regex
+        let fillerPatterns = [
+            "\\b(?i)(um|uh|er|ah|hmm)\\b[,.]?\\s*",
+            "\\b(?i)you know[,]?\\s*",
+            "\\b(?i)I mean[,]?\\s*"
+        ]
+        for pattern in fillerPatterns {
+            if let regex = try? NSRegularExpression(pattern: pattern, options: []) {
+                result = regex.stringByReplacingMatches(
+                    in: result,
+                    options: [],
+                    range: NSRange(location: 0, length: result.utf16.count),
+                    withTemplate: ""
+                )
+            }
+        }
+
+        // Clean redundant spaces and ensure first letter capitalization
+        result = result.replacingOccurrences(of: "  +", with: " ", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        if let first = result.first {
+            result = first.uppercased() + result.dropFirst()
+        }
+        return result
+    }
+
     // MARK: - Standard Speech Cleanup
 
     func clean(_ transcript: String, intensity: CleanupIntensity, appContext: String?) async throws -> String {
@@ -97,32 +130,30 @@ final class Cleaner {
         let trimmed = transcript.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return "" }
 
-        // Fast-path for short common phrases (0ms latency)
-        let words = trimmed.components(separatedBy: .whitespaces).filter { !$0.isEmpty }
-        let fillers: Set<String> = ["um", "uh", "er", "ah", "hmm"]
-        let hasFillers = words.contains { fillers.contains($0.lowercased()) }
-        if words.count <= 2 && !hasFillers {
-            // Capitalize first letter and return instantly
-            return trimmed.prefix(1).uppercased() + trimmed.dropFirst()
+        // Instant path for light intensity or short phrases
+        if intensity == .light {
+            return Self.quickClean(trimmed)
         }
 
         guard let url = URL(string: "\(endpoint)/api/generate") else {
-            throw CleanerError.ollamaUnreachable(endpoint: endpoint)
+            return Self.quickClean(trimmed)
         }
 
         let systemPrompt = Self.systemPrompt(intensity: intensity, appContext: appContext)
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.timeoutInterval = 10
+        // Strict 2.0s timeout: never block the user if local LLM is busy or slow
+        request.timeoutInterval = 2.0
 
-        let maxPredict = max(32, min(256, words.count * 2 + 16))
+        let words = trimmed.components(separatedBy: .whitespaces).filter { !$0.isEmpty }
+        let maxPredict = max(32, min(160, words.count + 20))
         let body: [String: Any] = [
             "model": model,
             "system": systemPrompt,
             "prompt": Self.userPrompt(for: transcript),
-            "stream": onToken != nil, // Non-streaming is 3x faster when token callback is not needed
-            "keep_alive": "5m", // Keep model warm in RAM for 5 minutes
+            "stream": false,
+            "keep_alive": "5m",
             "options": [
                 "temperature": 0.0,
                 "num_predict": maxPredict,
@@ -132,71 +163,23 @@ final class Cleaner {
         ]
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
 
-        // Ultra-fast non-streaming path
-        if onToken == nil {
-            let data: Data
-            let response: URLResponse
-            do {
-                (data, response) = try await URLSession.shared.data(for: request)
-            } catch {
-                throw CleanerError.ollamaUnreachable(endpoint: endpoint)
-            }
-            if let http = response as? HTTPURLResponse, http.statusCode == 404 {
-                throw CleanerError.modelMissing(model: model)
-            }
-            struct SingleResponse: Decodable {
-                let response: String?
-                let error: String?
-            }
-            if let parsed = try? JSONDecoder().decode(SingleResponse.self, from: data) {
-                if let err = parsed.error {
-                    if err.contains("not found") { throw CleanerError.modelMissing(model: model) }
-                    throw CleanerError.badResponse(err)
-                }
-                let result = (parsed.response ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
-                return result.isEmpty ? transcript : result
-            }
-            return transcript
-        }
-
-        // Streaming fallback when token-by-token callback is provided
-        let (bytes, response): (URLSession.AsyncBytes, URLResponse)
         do {
-            (bytes, response) = try await URLSession.shared.bytes(for: request)
-        } catch {
-            throw CleanerError.ollamaUnreachable(endpoint: endpoint)
-        }
-
-        if let http = response as? HTTPURLResponse, http.statusCode == 404 {
-            throw CleanerError.modelMissing(model: model)
-        }
-
-        struct Chunk: Decodable {
-            let response: String?
-            let done: Bool?
-            let error: String?
-        }
-
-        var cleaned = ""
-        for try await line in bytes.lines {
-            guard let data = line.data(using: .utf8),
-                  let chunk = try? JSONDecoder().decode(Chunk.self, from: data) else { continue }
-            if let errorMessage = chunk.error {
-                if errorMessage.contains("not found") {
-                    throw CleanerError.modelMissing(model: model)
+            let (data, response) = try await URLSession.shared.data(for: request)
+            if let http = response as? HTTPURLResponse, http.statusCode == 200 {
+                struct SingleResponse: Decodable {
+                    let response: String?
                 }
-                throw CleanerError.badResponse(errorMessage)
+                if let parsed = try? JSONDecoder().decode(SingleResponse.self, from: data),
+                   let res = parsed.response?.trimmingCharacters(in: .whitespacesAndNewlines),
+                   !res.isEmpty {
+                    return res
+                }
             }
-            if let token = chunk.response {
-                cleaned += token
-                onToken?(cleaned)
-            }
-            if chunk.done == true { break }
+        } catch {
+            flog("[cleaner] Ollama response slow or failed (\(error.localizedDescription)) — falling back to quickClean")
         }
 
-        let result = cleaned.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !result.isEmpty else { return transcript }
-        return result
+        return Self.quickClean(trimmed)
     }
 
     // MARK: - Highlight & Voice Transform
